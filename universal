@@ -1784,9 +1784,10 @@ AddLabel(CustomTab,"custom toggles",true)
 AddCustomToggle(CustomTab)
 
 AddLabel(CreditsTab,"special thanks",true)
-AddLabel(CreditsTab,"raknetskid")
+AddLabel(CreditsTab,"raknetSkid")
+AddLabel(CreditsTab,"DuoDeveloper")
+AddLabel(CreditsTab,"ab1ss")
+AddLabel(CreditsTab,"Chasova")
 AddLabel(CreditsTab,"solinexx")
-AddLabel(CreditsTab,"ab1s")
-AddLabel(CreditsTab,"chasova")
 
 Pages.movement.Visible=true
