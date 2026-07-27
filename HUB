@@ -1,0 +1,306 @@
+ local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local Themes = {
+    dark =     {name="dark",     main=Color3.fromRGB(20,20,25),    secondary=Color3.fromRGB(30,30,38),   accent=Color3.fromRGB(88,101,242),  text=Color3.fromRGB(255,255,255), glass=0.55, glassSecondary=0.65},
+    light =    {name="light",    main=Color3.fromRGB(230,235,245), secondary=Color3.fromRGB(255,255,255),accent=Color3.fromRGB(0,122,255),   text=Color3.fromRGB(15,15,20),    glass=0.35, glassSecondary=0.25},
+    purple =   {name="purple",   main=Color3.fromRGB(25,15,40),    secondary=Color3.fromRGB(45,25,65),   accent=Color3.fromRGB(147,51,234),  text=Color3.fromRGB(255,255,255), glass=0.55, glassSecondary=0.65},
+    midnight = {name="midnight", main=Color3.fromRGB(10,18,35),    secondary=Color3.fromRGB(20,32,55),   accent=Color3.fromRGB(34,211,238),  text=Color3.fromRGB(255,255,255), glass=0.55, glassSecondary=0.65},
+    rose =     {name="rose",     main=Color3.fromRGB(35,15,20),    secondary=Color3.fromRGB(55,25,35),   accent=Color3.fromRGB(255,80,120),  text=Color3.fromRGB(255,255,255), glass=0.55, glassSecondary=0.65},
+    forest =   {name="forest",   main=Color3.fromRGB(15,30,20),    secondary=Color3.fromRGB(25,45,30),   accent=Color3.fromRGB(50,200,80),   text=Color3.fromRGB(255,255,255), glass=0.55, glassSecondary=0.65},
+    sunset =   {name="sunset",   main=Color3.fromRGB(35,20,10),    secondary=Color3.fromRGB(55,32,15),   accent=Color3.fromRGB(255,140,0),   text=Color3.fromRGB(255,255,255), glass=0.55, glassSecondary=0.65},
+    ice =      {name="ice",      main=Color3.fromRGB(15,25,40),    secondary=Color3.fromRGB(25,40,60),   accent=Color3.fromRGB(135,206,250), text=Color3.fromRGB(255,255,255), glass=0.45, glassSecondary=0.55},
+}
+
+local T = Themes.dark
+local allFrames, allLabels, allTabBtns, allAccentBtns = {}, {}, {}, {}
+
+local Aviadons = Instance.new("ScreenGui")
+Aviadons.Name = "Aviadons"
+Aviadons.Parent = game:GetService("CoreGui")
+Aviadons.ResetOnSpawn = false
+Aviadons.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Увеличенная длина (900x520) для прямоугольной формы
+local Main = Instance.new("Frame")
+Main.Name = "main"
+Main.Parent = Aviadons
+Main.BackgroundColor3 = T.main
+Main.BackgroundTransparency = T.glass
+Main.Position = UDim2.new(0.2, 0, 0.2, 0)
+Main.Size = UDim2.new(0, 900, 0, 520)
+Main.BorderSizePixel = 0
+Instance.new("UICorner",Main).CornerRadius = UDim.new(0,16)
+local MainStroke = Instance.new("UIStroke",Main)
+MainStroke.Thickness = 1.2
+MainStroke.Color = Color3.fromRGB(255,255,255)
+MainStroke.Transparency = 0.72
+
+local Blur2 = Instance.new("Frame",Main)
+Blur2.BackgroundColor3 = T.main
+Blur2.BackgroundTransparency = 0.92
+Blur2.Size = UDim2.new(1,0,1,0)
+Blur2.BorderSizePixel = 0
+Blur2.ZIndex = 0
+Instance.new("UICorner",Blur2).CornerRadius = UDim.new(0,16)
+
+local TopBar = Instance.new("Frame",Main)
+TopBar.Size = UDim2.new(1,0,0,46)
+TopBar.BackgroundColor3 = T.secondary
+TopBar.BackgroundTransparency = T.glassSecondary
+TopBar.BorderSizePixel = 0
+TopBar.ZIndex = 2
+Instance.new("UICorner",TopBar).CornerRadius = UDim.new(0,16)
+local TopFix = Instance.new("Frame",TopBar)
+TopFix.Size = UDim2.new(1,0,0,16)
+TopFix.Position = UDim2.new(0,0,1,-16)
+TopFix.BackgroundColor3 = T.secondary
+TopFix.BackgroundTransparency = T.glassSecondary
+TopFix.BorderSizePixel = 0
+local TopStroke = Instance.new("UIStroke",TopBar)
+TopStroke.Thickness = 1
+TopStroke.Color = Color3.fromRGB(255,255,255)
+TopStroke.Transparency = 0.8
+
+local Title = Instance.new("TextLabel",TopBar)
+Title.Size = UDim2.new(0,200,1,0)
+Title.Position = UDim2.new(0,16,0,0)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "aviadons HUB"
+Title.TextColor3 = T.text
+Title.TextSize = 17
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.BackgroundTransparency = 1
+Title.ZIndex = 3
+
+local HintLabel = Instance.new("TextLabel",TopBar)
+HintLabel.Size = UDim2.new(0,200,1,0)
+HintLabel.Position = UDim2.new(0.5,-100,0,0)
+HintLabel.Font = Enum.Font.Gotham
+HintLabel.Text = "RCtrl = toggle"
+HintLabel.TextColor3 = Color3.fromRGB(150,150,160)
+HintLabel.TextSize = 12
+HintLabel.BackgroundTransparency = 1
+HintLabel.ZIndex = 3
+
+local CloseBtn = Instance.new("TextButton",TopBar)
+CloseBtn.Size = UDim2.new(0,28,0,28)
+CloseBtn.Position = UDim2.new(1,-38,0.5,-14)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(220,53,69)
+CloseBtn.BackgroundTransparency = 0.25
+CloseBtn.Text = "×"
+CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 18
+CloseBtn.ZIndex = 3
+Instance.new("UICorner",CloseBtn).CornerRadius = UDim.new(1,0)
+CloseBtn.MouseButton1Click:Connect(function() Main.Visible = false end)
+
+local Sidebar = Instance.new("Frame",Main)
+Sidebar.Size = UDim2.new(0,155,1,-60)
+Sidebar.Position = UDim2.new(0,10,0,52)
+Sidebar.BackgroundColor3 = T.secondary
+Sidebar.BackgroundTransparency = T.glassSecondary
+Sidebar.BorderSizePixel = 0
+Sidebar.ZIndex = 2
+Instance.new("UICorner",Sidebar).CornerRadius = UDim.new(0,12)
+local SideStroke = Instance.new("UIStroke",Sidebar)
+SideStroke.Thickness = 1
+SideStroke.Color = Color3.fromRGB(255,255,255)
+SideStroke.Transparency = 0.8
+
+local SideScroll = Instance.new("ScrollingFrame",Sidebar)
+SideScroll.Size = UDim2.new(1,0,1,-10)
+SideScroll.Position = UDim2.new(0,0,0,8)
+SideScroll.BackgroundTransparency = 1
+SideScroll.ScrollBarThickness = 0
+SideScroll.CanvasSize = UDim2.new(0,0,3,0)
+SideScroll.ZIndex = 2
+local SideList = Instance.new("UIListLayout",SideScroll)
+SideList.Padding = UDim.new(0,5)
+SideList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+local SidePad = Instance.new("UIPadding",SideScroll)
+SidePad.PaddingLeft = UDim.new(0,6)
+SidePad.PaddingRight = UDim.new(0,6)
+
+local Container = Instance.new("Frame",Main)
+Container.Position = UDim2.new(0,175,0,52)
+Container.Size = UDim2.new(1,-185,1,-62)
+Container.BackgroundTransparency = 1
+Container.ZIndex = 2
+
+local Pages = Instance.new("Folder",Container)
+
+local dragging, dragStart, startPos
+TopBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging=true; dragStart=input.Position; startPos=Main.Position
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset+delta.X, startPos.Y.Scale, startPos.Y.Offset+delta.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging=false end
+end)
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.RightControl then Main.Visible = not Main.Visible end
+end)
+
+local function UpdateTheme(theme)
+    T = theme
+    Main.BackgroundColor3 = T.main
+    Main.BackgroundTransparency = T.glass
+    Blur2.BackgroundColor3 = T.main
+    Blur2.BackgroundTransparency = 0.92
+    TopBar.BackgroundColor3 = T.secondary
+    TopBar.BackgroundTransparency = T.glassSecondary
+    TopFix.BackgroundColor3 = T.secondary
+    TopFix.BackgroundTransparency = T.glassSecondary
+    Sidebar.BackgroundColor3 = T.secondary
+    Sidebar.BackgroundTransparency = T.glassSecondary
+    Title.TextColor3 = T.text
+    for _, f in pairs(allFrames) do
+        if f and f.Parent then f.BackgroundColor3=T.secondary; f.BackgroundTransparency=T.glassSecondary end
+    end
+    for _, l in pairs(allLabels) do if l and l.Parent then l.TextColor3=T.text end end
+    for _, btn in pairs(allTabBtns) do if btn and btn.Parent then btn.TextColor3=T.text end end
+    for _, btn in pairs(allAccentBtns) do if btn and btn.Parent then btn.BackgroundColor3=T.accent end end
+end
+
+local function CreateTab(name)
+    local Page = Instance.new("ScrollingFrame")
+    Page.Name = name
+    Page.Parent = Pages
+    Page.Size = UDim2.new(1,0,1,0)
+    Page.BackgroundTransparency = 1
+    Page.Visible = false
+    Page.ScrollBarThickness = 3
+    Page.ScrollBarImageColor3 = Color3.fromRGB(255,255,255)
+    Page.CanvasSize = UDim2.new(0,0,10,0)
+    Page.BorderSizePixel = 0
+    Page.ZIndex = 2
+    local pl = Instance.new("UIListLayout",Page)
+    pl.Padding = UDim.new(0,7)
+    pl.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    local pad = Instance.new("UIPadding",Page)
+    pad.PaddingTop = UDim.new(0,4)
+
+    local TabBtn = Instance.new("TextButton",SideScroll)
+    TabBtn.Size = UDim2.new(1,0,0,36)
+    TabBtn.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    TabBtn.BackgroundTransparency = 0.9
+    TabBtn.Font = Enum.Font.Gotham
+    TabBtn.Text = name
+    TabBtn.TextColor3 = T.text
+    TabBtn.TextSize = 13
+    TabBtn.ZIndex = 3
+    Instance.new("UICorner",TabBtn).CornerRadius = UDim.new(0,8)
+    local ts = Instance.new("UIStroke",TabBtn)
+    ts.Thickness=1; ts.Color=Color3.fromRGB(255,255,255); ts.Transparency=0.85
+    table.insert(allTabBtns,TabBtn)
+
+    TabBtn.MouseButton1Click:Connect(function()
+        for _, v in pairs(Pages:GetChildren()) do v.Visible=false end
+        Page.Visible = true
+        for _, btn in pairs(SideScroll:GetChildren()) do
+            if btn:IsA("TextButton") then
+                TweenService:Create(btn,TweenInfo.new(0.2),{BackgroundColor3=Color3.fromRGB(255,255,255),BackgroundTransparency=0.9}):Play()
+            end
+        end
+        TweenService:Create(TabBtn,TweenInfo.new(0.2),{BackgroundColor3=T.accent,BackgroundTransparency=0.25}):Play()
+    end)
+    return Page
+end
+
+local function AddButton(parent, text, callback)
+    local Btn=Instance.new("TextButton")
+    Btn.Size=UDim2.new(0.97,0,0,40)
+    Btn.BackgroundColor3=T.accent; Btn.BackgroundTransparency=0.3
+    Btn.Font=Enum.Font.GothamSemibold; Btn.Text=text
+    Btn.TextColor3=Color3.fromRGB(255,255,255); Btn.TextSize=13
+    Btn.Parent=parent; Btn.ZIndex=2
+    Instance.new("UICorner",Btn).CornerRadius=UDim.new(0,9)
+    local bs=Instance.new("UIStroke",Btn)
+    bs.Thickness=1; bs.Color=Color3.fromRGB(255,255,255); bs.Transparency=0.78
+    table.insert(allAccentBtns,Btn)
+    Btn.MouseButton1Click:Connect(function()
+        TweenService:Create(Btn,TweenInfo.new(0.1),{BackgroundTransparency=0.1}):Play()
+        task.wait(0.1)
+        TweenService:Create(Btn,TweenInfo.new(0.1),{BackgroundTransparency=0.3}):Play()
+        callback()
+    end)
+    return Btn
+end
+
+local function AddLabel(parent, text, isHeader)
+    local Lbl=Instance.new("TextLabel")
+    Lbl.Size=UDim2.new(0.97,0,0,isHeader and 36 or 32)
+    Lbl.BackgroundColor3=T.secondary
+    Lbl.BackgroundTransparency=T.glassSecondary
+    Lbl.Font=isHeader and Enum.Font.GothamBold or Enum.Font.Gotham
+    Lbl.Text=text
+    Lbl.TextColor3=isHeader and T.accent or T.text
+    Lbl.TextSize=isHeader and 15 or 13
+    Lbl.Parent=parent; Lbl.ZIndex=2
+    Instance.new("UICorner",Lbl).CornerRadius=UDim.new(0,8)
+    table.insert(allFrames,Lbl)
+    table.insert(allLabels,Lbl)
+    return Lbl
+end
+
+local PopularTab = CreateTab("popular")
+local MyTab = CreateTab("my scripts")
+local ThemeTab = CreateTab("themes")
+local CreditsTab = CreateTab("credits")
+
+AddLabel(PopularTab, "popular scripts", true)
+AddButton(PopularTab, "Infinite Yield", function() 
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+end)
+AddButton(PopularTab, "Dex Explorer ++", function() 
+    loadstring(game:HttpGet("https://github.com/AZYsGithub/DexPlusPlus/releases/latest/download/out.lua"))() 
+end)
+AddButton(PopularTab, "F3X Building Tool (visual)", function() 
+    loadstring(game:GetObjects("rbxassetid://6695644299")[1].Source)()
+end)
+
+AddLabel(MyTab, "my scripts", true)
+AddButton(MyTab, "Main Scirpt", function() 
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/fillippartonorovgg2003-spec/aviadons-universal/refs/heads/main/universal"))()
+end)
+AddButton(MyTab, "Pls Donate", function() 
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/fillippartonorovgg2003-spec/aviadons-universal/refs/heads/main/plsdonate"))()
+end)
+AddButton(MyTab, "Murder Mystery 2 (Test)", function() 
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/fillippartonorovgg2003-spec/aviadons-universal/refs/heads/main/mm2"))()
+end)
+
+AddLabel(ThemeTab,"preset themes",true)
+AddButton(ThemeTab,"dark",function() UpdateTheme(Themes.dark) end)
+AddButton(ThemeTab,"light",function() UpdateTheme(Themes.light) end)
+AddButton(ThemeTab,"purple",function() UpdateTheme(Themes.purple) end)
+AddButton(ThemeTab,"midnight",function() UpdateTheme(Themes.midnight) end)
+AddButton(ThemeTab,"rose",function() UpdateTheme(Themes.rose) end)
+AddButton(ThemeTab,"forest",function() UpdateTheme(Themes.forest) end)
+AddButton(ThemeTab,"sunset",function() UpdateTheme(Themes.sunset) end)
+AddButton(ThemeTab,"ice",function() UpdateTheme(Themes.ice) end)
+
+AddLabel(CreditsTab,"special thanks all",true)
+AddLabel(CreditsTab, "ab1ss")
+AddLabel(CreditsTab, "Chasova")
+AddLabel(CreditsTab, "solinexx")
+AddLabel(CreditsTab, "swan")
+AddLabel(CreditsTab, "прилагагательный")
+AddLabel(CreditsTab, "Kjja | Кжжа")
+AddLabel(CreditsTab, "raknetSkid")
+AddLabel(CreditsTab, "DuoDeveloper")
+AddLabel(CreditsTab, "M3ster_")
+
+Pages.popular.Visible = true
