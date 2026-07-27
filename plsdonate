@@ -693,10 +693,9 @@ AddButton(ThemeTab, "purple", function() UpdateTheme(Themes.purple) end, "Фио
 AddButton(ThemeTab, "rose", function() UpdateTheme(Themes.rose) end, "Розовая тема.")
 
 AddLabel(CreditsTab, "special thanks", true)
-AddLabel(CreditsTab, "orangelux")
 AddLabel(CreditsTab, "DuoDeveloper")
-AddLabel(CreditsTab, "aproblemaotecs")
-AddLabel(CreditsTab, "#kádwi")
-AddLabel(CreditsTab, "werqq")
+AddLabel(CreditsTab, "𝒮𝓌𝒶𝓃")
+AddLabel(CreditsTab, "прилагагательный")
+AddLabel(CreditsTab, "Kjja | Кжжа")
 
 Pages.main.Visible = true
