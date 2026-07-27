@@ -694,7 +694,7 @@ AddButton(ThemeTab, "rose", function() UpdateTheme(Themes.rose) end, "Розов
 
 AddLabel(CreditsTab, "special thanks", true)
 AddLabel(CreditsTab, "DuoDeveloper")
-AddLabel(CreditsTab, "𝒮𝓌𝒶𝓃")
+AddLabel(CreditsTab, "swam")
 AddLabel(CreditsTab, "прилагагательный")
 AddLabel(CreditsTab, "Kjja | Кжжа")
 
