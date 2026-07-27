@@ -40,7 +40,22 @@ local State = {
     crosshairEnabled = false, crosshairColor = Color3.fromRGB(0,255,0),
     nightVisionEnabled = false, antiFlingEnabled = false,
     lagSwitchEnabled = false, autoRejoinEnabled = false,
-    infiniteStaminaEnabled = false, noSlowdownEnabled = false
+    infiniteStaminaEnabled = false, noSlowdownEnabled = false,
+    aimLockEnabled = false, aimLockTarget = nil,
+    autoDodgeEnabled = false, hitboxExpander = 0,
+    noJumpDelay = false, autoReloadEnabled = false,
+    fastPunchEnabled = false, gunModEnabled = false,
+    reachExtender = 0, autoRespawnEnabled = false, autoPickupEnabled = false,
+    autoQuestEnabled = false, autoBuyEnabled = false, autoEquipEnabled = false,
+    antiVoidEnabled = false, autoHealEnabled = false, autoHealThreshold = 30,
+    platformStand = false, lockZoomEnabled = false,
+    removeEffects = false, disableShadows = false,
+    autoClickerEnabled = false, autoClickerSpeed = 0.1, autoClickerHolding = false,
+    spamChatEnabled = false, spamChatMessage = "aviadons on top", spamChatDelay = 1,
+    trailEnabled = false, trailColor = Color3.fromRGB(255,0,255), trailLength = 2,
+    autoBlockEnabled = false, freezePlayersEnabled = false,
+    autoFarmMobsEnabled = false, autoFarmRadius = 100,
+    acDisablerEnabled = false
 }
 
 local Themes = {
@@ -804,179 +819,23 @@ local function AddDropdown(parent, text, optionsGetter, callback)
     end}
 end
 
-local function UpdateESP()
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr~=LocalPlayer and plr.Character then
-            local char=plr.Character
-            local hl=char:FindFirstChild("AviadonsHL")
-            if State.espEnabled then
-                if not hl then hl=Instance.new("Highlight",char); hl.Name="AviadonsHL" end
-                hl.FillColor=State.espFillColor
-                hl.OutlineColor=State.espOutlineColor
-                hl.FillTransparency=State.espFillTransp
-                hl.OutlineTransparency=State.espOutlineTransp
-            else
-                if hl then hl:Destroy() end
-            end
-
-            local chams=char:FindFirstChild("AviadonsChams")
-            if State.espChams then
-                if not chams then
-                    chams=Instance.new("Highlight",char)
-                    chams.Name="AviadonsChams"
-                    chams.DepthMode=Enum.HighlightDepthMode.AlwaysOnTop
-                end
-                chams.FillColor=State.espChamsColor
-                chams.OutlineColor=State.espChamsColor
-                chams.FillTransparency=0.3
-                chams.OutlineTransparency=0.5
-            else
-                if chams then chams:Destroy() end
-            end
-
-            local hrp=char:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                if State.espNametags then
-                    if not hrp:FindFirstChild("AviadonsNameTag") then
-                        local bg=Instance.new("BillboardGui",hrp)
-                        bg.Name="AviadonsNameTag"
-                        bg.Size=UDim2.new(0,130,0,40)
-                        bg.StudsOffset=Vector3.new(0,4,0)
-                        bg.AlwaysOnTop=true
-                        local lbl=Instance.new("TextLabel",bg)
-                        lbl.Size=UDim2.new(1,0,0.6,0)
-                        lbl.BackgroundTransparency=1
-                        lbl.Text=plr.DisplayName
-                        lbl.TextColor3=Color3.fromRGB(255,255,255)
-                        lbl.Font=Enum.Font.GothamBold
-                        lbl.TextSize=13
-                        local sublbl=Instance.new("TextLabel",bg)
-                        sublbl.Size=UDim2.new(1,0,0.4,0)
-                        sublbl.Position=UDim2.new(0,0,0.6,0)
-                        sublbl.BackgroundTransparency=1
-                        sublbl.Text="@"..plr.Name
-                        sublbl.TextColor3=Color3.fromRGB(200,200,200)
-                        sublbl.Font=Enum.Font.Gotham
-                        sublbl.TextSize=10
-                    end
-                else
-                    if hrp:FindFirstChild("AviadonsNameTag") then hrp.AviadonsNameTag:Destroy() end
-                end
-
-                if State.espHealthBars then
-                    local hum=char:FindFirstChild("Humanoid")
-                    if hum and not hrp:FindFirstChild("HealthBar") then
-                        local hbg=Instance.new("BillboardGui",hrp)
-                        hbg.Name="HealthBar"
-                        hbg.Size=UDim2.new(0,80,0,10)
-                        hbg.StudsOffset=Vector3.new(0,2.5,0)
-                        hbg.AlwaysOnTop=true
-                        local bg=Instance.new("Frame",hbg)
-                        bg.Size=UDim2.new(1,0,1,0)
-                        bg.BackgroundColor3=Color3.fromRGB(50,50,50)
-                        Instance.new("UICorner",bg).CornerRadius=UDim.new(0,4)
-                        local fill=Instance.new("Frame",bg)
-                        fill.Name="fill"
-                        fill.Size=UDim2.new(hum.Health/hum.MaxHealth,0,1,0)
-                        fill.BackgroundColor3=Color3.fromRGB(0,200,80)
-                        Instance.new("UICorner",fill).CornerRadius=UDim.new(0,4)
-                        RunService.Heartbeat:Connect(function()
-                            if hum and hum.Parent then
-                                local pct=math.clamp(hum.Health/hum.MaxHealth,0,1)
-                                fill.Size=UDim2.new(pct,0,1,0)
-                                fill.BackgroundColor3=Color3.fromHSV(pct*0.33,1,1)
-                            end
-                        end)
-                    end
-                else
-                    if hrp:FindFirstChild("HealthBar") then hrp.HealthBar:Destroy() end
-                end
-
-                if State.espDistance then
-                    if not hrp:FindFirstChild("AviadonsDistance") then
-                        local myHRP=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                        local dbg=Instance.new("BillboardGui",hrp)
-                        dbg.Name="AviadonsDistance"
-                        dbg.Size=UDim2.new(0,80,0,20)
-                        dbg.StudsOffset=Vector3.new(0,-2,0)
-                        dbg.AlwaysOnTop=true
-                        local dlbl=Instance.new("TextLabel",dbg)
-                        dlbl.Size=UDim2.new(1,0,1,0)
-                        dlbl.BackgroundTransparency=1
-                        dlbl.TextColor3=Color3.fromRGB(255,255,100)
-                        dlbl.Font=Enum.Font.GothamBold
-                        dlbl.TextSize=11
-                        RunService.Heartbeat:Connect(function()
-                            if myHRP and myHRP.Parent and hrp and hrp.Parent then
-                                dlbl.Text=math.floor((hrp.Position-myHRP.Position).Magnitude).."st"
-                            end
-                        end)
-                    end
-                else
-                    if hrp:FindFirstChild("AviadonsDistance") then hrp.AviadonsDistance:Destroy() end
-                end
-            end
-        end
-    end
-end
-
-RunService.Heartbeat:Connect(function()
-    if State.espTracers or State.espBoxes then
-        for _, d in pairs(ESP_drawings) do
-            pcall(function() if d and d.Remove then d:Remove() end end)
-        end
-        ESP_drawings={}
-        for _, plr in pairs(Players:GetPlayers()) do
-            if plr~=LocalPlayer and plr.Character then
-                local hrp=plr.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local pos,vis=workspace.CurrentCamera:WorldToViewportPoint(hrp.Position)
-                    if vis then
-                        if State.espTracers then
-                            local ok,line=pcall(function() return Drawing.new("Line") end)
-                            if ok then
-                                line.From=Vector2.new(workspace.CurrentCamera.ViewportSize.X/2,workspace.CurrentCamera.ViewportSize.Y)
-                                line.To=Vector2.new(pos.X,pos.Y)
-                                line.Color=State.espTracerColor
-                                line.Thickness=1.5; line.Transparency=1; line.Visible=true
-                                table.insert(ESP_drawings,line)
-                            end
-                        end
-                        if State.espBoxes then
-                            local topPos=workspace.CurrentCamera:WorldToViewportPoint(hrp.Position+Vector3.new(0,3.5,0))
-                            local botPos=workspace.CurrentCamera:WorldToViewportPoint(hrp.Position+Vector3.new(0,-3.5,0))
-                            local height=math.abs(topPos.Y-botPos.Y)
-                            local width=height*0.5
-                            local ok2,box=pcall(function() return Drawing.new("Square") end)
-                            if ok2 then
-                                box.Position=Vector2.new(pos.X-width/2,topPos.Y)
-                                box.Size=Vector2.new(width,height)
-                                box.Color=State.espBoxColor; box.Thickness=1.5
-                                box.Filled=false; box.Transparency=1; box.Visible=true
-                                table.insert(ESP_drawings,box)
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-end)
-
 local MainTab = CreateTab("movement")
 local FarmTab = CreateTab("autofarm")
 local TpTab = CreateTab("teleport")
-local ESPTab = CreateTab("esp")
-local VisualTab = CreateTab("visual")
-local WorldTab = CreateTab("world")
-local PlayerTab = CreateTab("player")
+local CombatTab = CreateTab("combat")
+local MiscTab = CreateTab("misc")
 local ConfigTab = CreateTab("configs")
 local ThemeTab = CreateTab("themes")
 local CustomTab = CreateTab("custom")
-local FlingTab = CreateTab("fling")
-local CombatTab = CreateTab("combat")
-local MiscTab = CreateTab("misc")
 local CreditsTab = CreateTab("credits")
+
+local function GetPlayerList()
+    local list={}
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr~=LocalPlayer then table.insert(list,plr.Name) end
+    end
+    return list
+end
 
 local speedRef=AddSlider(MainTab,"speed",16,500,16,"speed",function(v)
     State.speed=v
@@ -1073,76 +932,6 @@ AddToggle(MainTab,"rainbow character",false,function(v)
     end)
 end)
 
-local character=LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local humanoidRootPart=character:WaitForChild("HumanoidRootPart")
-local coinsFolder=Workspace:FindFirstChild("coins")
-local collectReq=ReplicatedStorage:FindFirstChild("CollectCoinRequest")
-
-local function getCoinPositions()
-    if not coinsFolder then return {} end
-    local out={}
-    for _, coin in ipairs(coinsFolder:GetChildren()) do
-        if coin:IsA("Model") and not coin:GetAttribute("Collected") then
-            local p=coin.PrimaryPart or coin:FindFirstChildWhichIsA("BasePart")
-            if p then table.insert(out,{coin=coin,position=p.Position}) end
-        end
-    end
-    return out
-end
-
-local function processCoins()
-    if not character or not humanoidRootPart then
-        character=LocalPlayer.Character
-        if character then humanoidRootPart=character:FindFirstChild("HumanoidRootPart") end
-        return
-    end
-    local closest,closestDist=nil,State.collectionRadius
-    for _, data in ipairs(getCoinPositions()) do
-        local dist=(data.position-humanoidRootPart.Position).Magnitude
-        if dist<closestDist then closestDist=dist; closest=data end
-    end
-    if closest then
-        if closestDist>8 then
-            humanoidRootPart.CFrame=CFrame.new(humanoidRootPart.Position+(closest.position-humanoidRootPart.Position).Unit*16)
-        elseif collectReq then
-            collectReq:FireServer(closest.coin)
-        end
-    end
-    for _, data in ipairs(getCoinPositions()) do
-        if (data.position-humanoidRootPart.Position).Magnitude<8 and collectReq then
-            collectReq:FireServer(data.coin)
-        end
-    end
-end
-
-AddToggle(FarmTab,"auto coin farm",false,function(v)
-    State.farmRunning=v
-    if v then
-        task.spawn(function()
-            while State.farmRunning do processCoins(); task.wait(0.05) end
-        end)
-    end
-end)
-
-local radRef=AddSlider(FarmTab,"collection radius",10,200,50,"collectionRadius",function(v)
-    State.collectionRadius=v
-end)
-
-AddToggle(FarmTab,"auto collect nearby tools",false,function(v)
-    State.autoTool=v
-    task.spawn(function()
-        while State.autoTool do
-            for _, item in pairs(Workspace:GetChildren()) do
-                if item:IsA("Tool") and item:FindFirstChild("Handle") then
-                    LocalPlayer.Character:MoveTo(item.Handle.Position)
-                    task.wait(0.3)
-                end
-            end
-            task.wait(1)
-        end
-    end)
-end)
-
 AddButton(TpTab,"tp all players to me",function()
     for _, plr in pairs(Players:GetPlayers()) do
         if plr~=LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
@@ -1197,605 +986,6 @@ AddButton(TpTab,"tp to camera lookat",function()
     end
 end)
 
-AddLabel(ESPTab,"highlight esp",true)
-AddToggle(ESPTab,"esp highlight",false,function(v) State.espEnabled=v; UpdateESP() end)
-AddColorPicker(ESPTab,"fill color",function() return State.espFillColor end,function(c) State.espFillColor=c; UpdateESP() end)
-AddColorPicker(ESPTab,"outline color",function() return State.espOutlineColor end,function(c) State.espOutlineColor=c; UpdateESP() end)
-AddSlider(ESPTab,"fill transparency",0,10,5,nil,function(v) State.espFillTransp=v/10; UpdateESP() end)
-AddSlider(ESPTab,"outline transparency",0,10,0,nil,function(v) State.espOutlineTransp=v/10; UpdateESP() end)
-
-AddLabel(ESPTab,"chams",true)
-AddToggle(ESPTab,"chams (always on top)",false,function(v) State.espChams=v; UpdateESP() end)
-AddColorPicker(ESPTab,"chams color",function() return State.espChamsColor end,function(c) State.espChamsColor=c; UpdateESP() end)
-
-AddLabel(ESPTab,"tracers & boxes",true)
-AddToggle(ESPTab,"tracers",false,function(v) State.espTracers=v end)
-AddColorPicker(ESPTab,"tracer color",function() return State.espTracerColor end,function(c) State.espTracerColor=c end)
-AddToggle(ESPTab,"esp boxes",false,function(v) State.espBoxes=v end)
-AddColorPicker(ESPTab,"box color",function() return State.espBoxColor end,function(c) State.espBoxColor=c end)
-
-AddLabel(ESPTab,"other esp",true)
-AddToggle(ESPTab,"name tags",false,function(v) State.espNametags=v; UpdateESP() end)
-AddToggle(ESPTab,"health bars",false,function(v) State.espHealthBars=v; UpdateESP() end)
-AddToggle(ESPTab,"distance display",false,function(v) State.espDistance=v; UpdateESP() end)
-
-local entityEspFolder=Instance.new("Folder",Aviadons)
-entityEspFolder.Name="EntityESP"
-local function TrackEntities()
-    task.spawn(function()
-        while true do
-            for _, obj in pairs(Workspace:GetDescendants()) do
-                if obj:IsA("Model") and (obj.Name:lower():find("boss") or obj.Name:lower():find("npc") or obj.Name:lower():find("enemy") or obj.Name:lower():find("mob")) then
-                    if not obj:FindFirstChild("AviadonsEntityHL") then
-                        local hl=Instance.new("Highlight",obj)
-                        hl.Name="AviadonsEntityHL"
-                        hl.FillColor=Color3.fromRGB(255,0,0)
-                        hl.OutlineColor=Color3.fromRGB(255,255,255)
-                        hl.FillTransparency=0.5
-                    end
-                end
-            end
-            task.wait(5)
-        end
-    end)
-end
-AddToggle(ESPTab,"entity/boss esp",false,function(v)
-    if v then TrackEntities()
-    else for _, obj in pairs(entityEspFolder:GetChildren()) do obj:Destroy() end end
-end)
-
-AddToggle(VisualTab,"fullbright",false,function(v)
-    State.fullbright=v
-    Lighting.Brightness=v and 3 or 1
-    Lighting.ClockTime=v and 14 or 12
-    Lighting.GlobalShadows=not v
-end)
-
-AddToggle(VisualTab,"remove fog",false,function(v)
-    State.noFog=v
-    Lighting.FogEnd=v and 1e10 or 100000
-end)
-
-AddToggle(VisualTab,"x-ray",false,function(v)
-    State.xray=v
-    for _, obj in pairs(Workspace:GetDescendants()) do
-        if obj:IsA("BasePart") and not obj.Parent:FindFirstChild("Humanoid") then
-            obj.Transparency=v and 0.75 or 0
-        end
-    end
-end)
-
-AddToggle(VisualTab,"remove textures",false,function(v)
-    State.noTextures=v
-    for _, obj in pairs(Workspace:GetDescendants()) do
-        if obj:IsA("Decal") or obj:IsA("Texture") then obj.Transparency=v and 1 or 0 end
-    end
-end)
-
-AddToggle(VisualTab,"anti-lag",false,function(v)
-    State.antiLag=v
-    if v then
-        settings().Rendering.QualityLevel=1
-        for _, obj in pairs(Workspace:GetDescendants()) do
-            if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire") then
-                obj.Enabled=false
-            end
-        end
-    end
-end)
-
-local fovRef=AddSlider(VisualTab,"field of view",70,120,70,"fov",function(v)
-    State.fov=v
-    workspace.CurrentCamera.FieldOfView=v
-end)
-
-local gravRef=AddSlider(WorldTab,"gravity",0,196,196,"gravity",function(v)
-    State.gravityVal=v
-    Workspace.Gravity=v
-end)
-
-local timeRef=AddSlider(WorldTab,"time of day",0,24,14,"timeOfDay",function(v)
-    State.timeOfDay=v
-    Lighting.ClockTime=v
-end)
-
-AddToggle(WorldTab,"day lock",false,function(v)
-    State.dayLock=v
-    task.spawn(function()
-        while State.dayLock do Lighting.ClockTime=14; task.wait(0.1) end
-    end)
-end)
-
-AddToggle(WorldTab,"night lock",false,function(v)
-    State.nightLock=v
-    task.spawn(function()
-        while State.nightLock do Lighting.ClockTime=0; task.wait(0.1) end
-    end)
-end)
-
-AddToggle(WorldTab,"rain",false,function(v)
-    local rain=Workspace:FindFirstChild("AviadonsRain")
-    if v then
-        if not rain then
-            rain=Instance.new("Part",Workspace)
-            rain.Name="AviadonsRain"; rain.Anchored=true
-            rain.Size=Vector3.new(500,1,500); rain.Position=Vector3.new(0,200,0)
-            rain.Transparency=1; rain.CanCollide=false
-            local pe=Instance.new("ParticleEmitter",rain)
-            pe.Rate=500; pe.Lifetime=NumberRange.new(3,5)
-            pe.Speed=NumberRange.new(80,100); pe.SpreadAngle=Vector2.new(0,0)
-            pe.Color=ColorSequence.new(Color3.fromRGB(180,220,255))
-            pe.Size=NumberSequence.new(0.05); pe.Transparency=NumberSequence.new(0.7)
-        end
-    else
-        if rain then rain:Destroy() end
-    end
-end)
-
-AddToggle(WorldTab,"ambient dark",false,function(v)
-    Lighting.Ambient=v and Color3.fromRGB(0,0,0) or Color3.fromRGB(70,70,70)
-    Lighting.OutdoorAmbient=v and Color3.fromRGB(0,0,0) or Color3.fromRGB(127,127,127)
-end)
-
-AddToggle(PlayerTab,"invisible",false,function(v)
-    State.invisible=v
-    if LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") and part.Name~="HumanoidRootPart" then
-                part.Transparency=v and 1 or 0
-            end
-        end
-    end
-end)
-
-AddToggle(PlayerTab,"god mode",false,function(v)
-    State.godMode=v
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.MaxHealth=v and math.huge or 100
-        LocalPlayer.Character.Humanoid.Health=v and math.huge or 100
-    end
-end)
-
-AddToggle(PlayerTab,"anti-afk",false,function(v)
-    State.antiAfk=v
-    if v then
-        local VU=game:GetService("VirtualUser")
-        LocalPlayer.Idled:Connect(function()
-            VU:CaptureController()
-            VU:ClickButton2(Vector2.new())
-        end)
-    end
-end)
-
-AddButton(PlayerTab,"rejoin",function()
-    game:GetService("TeleportService"):Teleport(game.PlaceId,LocalPlayer)
-end)
-
-AddButton(PlayerTab,"reset character",function()
-    LocalPlayer.Character:BreakJoints()
-end)
-
-AddButton(PlayerTab,"copy game id",function()
-    if setclipboard then setclipboard(tostring(game.PlaceId)) end
-end)
-
-AddSlider(PlayerTab,"character scale",1,5,1,nil,function(v)
-    if LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("SpecialMesh") then
-                part.Scale=Vector3.new(v,v,v)
-            end
-        end
-    end
-end)
-
-AddLabel(ConfigTab,"configs",true)
-local configDropRef=AddDropdown(ConfigTab,"select config:",function()
-    return savedConfigNames
-end,function(name)
-    local ok=LoadConfig(name)
-    if ok then print("loaded config: "..name) end
-end)
-
-AddInputBox(ConfigTab,"save new config:","config name...","save",function(name)
-    SaveConfig(name)
-    configDropRef.refresh()
-    print("saved: "..name)
-end)
-
-AddInputBox(ConfigTab,"load config by name:","config name...","load",function(name)
-    local ok=LoadConfig(name)
-    print(ok and "loaded: "..name or "not found: "..name)
-end)
-
-AddButton(ConfigTab,"reset all settings",function()
-    State.speed=16; State.jumpPower=50; State.gravityVal=196
-    State.timeOfDay=14; State.collectionRadius=50; State.fov=70
-    State.espEnabled=false; State.espChams=false; State.espTracers=false
-    State.espBoxes=false; State.espNametags=false; State.espHealthBars=false
-    State.espDistance=false; State.espFillTransp=0.5; State.espOutlineTransp=0
-    if LocalPlayer.Character then
-        local hum=LocalPlayer.Character:FindFirstChild("Humanoid")
-        if hum then hum.WalkSpeed=16; hum.JumpPower=50 end
-    end
-    Workspace.Gravity=196; Lighting.ClockTime=14
-    workspace.CurrentCamera.FieldOfView=70
-    speedRef.setValue(16); jumpRef.setValue(50)
-    gravRef.setValue(196); timeRef.setValue(14)
-    radRef.setValue(50); fovRef.setValue(70)
-    UpdateESP()
-end)
-
-AddLabel(ThemeTab,"preset themes",true)
-AddButton(ThemeTab,"dark",function() UpdateTheme(Themes.dark) end)
-AddButton(ThemeTab,"light",function() UpdateTheme(Themes.light) end)
-AddButton(ThemeTab,"purple",function() UpdateTheme(Themes.purple) end)
-AddButton(ThemeTab,"midnight",function() UpdateTheme(Themes.midnight) end)
-AddButton(ThemeTab,"rose",function() UpdateTheme(Themes.rose) end)
-AddButton(ThemeTab,"forest",function() UpdateTheme(Themes.forest) end)
-AddButton(ThemeTab,"sunset",function() UpdateTheme(Themes.sunset) end)
-AddButton(ThemeTab,"ice",function() UpdateTheme(Themes.ice) end)
-
-AddLabel(ThemeTab,"custom theme builder",true)
-local customThemeData={
-    name="custom",
-    main=Color3.fromRGB(20,20,25),
-    secondary=Color3.fromRGB(30,30,38),
-    accent=Color3.fromRGB(88,101,242),
-    text=Color3.fromRGB(255,255,255),
-    glass=0.55, glassSecondary=0.65
-}
-
-AddColorPicker(ThemeTab,"main bg color",function() return customThemeData.main end,function(c) customThemeData.main=c end)
-AddColorPicker(ThemeTab,"secondary color",function() return customThemeData.secondary end,function(c) customThemeData.secondary=c end)
-AddColorPicker(ThemeTab,"accent color",function() return customThemeData.accent end,function(c) customThemeData.accent=c end)
-AddColorPicker(ThemeTab,"text color",function() return customThemeData.text end,function(c) customThemeData.text=c end)
-AddSlider(ThemeTab,"main transparency",0,10,5,nil,function(v) customThemeData.glass=v/10 end)
-AddSlider(ThemeTab,"secondary transparency",0,10,6,nil,function(v) customThemeData.glassSecondary=v/10 end)
-
-AddButton(ThemeTab,"preview theme",function()
-    UpdateTheme({
-        name=customThemeData.name,
-        main=customThemeData.main,
-        secondary=customThemeData.secondary,
-        accent=customThemeData.accent,
-        text=customThemeData.text,
-        glass=customThemeData.glass,
-        glassSecondary=customThemeData.glassSecondary
-    })
-end)
-
-AddInputBox(ThemeTab,"save custom theme:","theme name...","save",function(name)
-    customThemeData.name=name
-    SaveTheme(name,{
-        name=name,
-        main=customThemeData.main,
-        secondary=customThemeData.secondary,
-        accent=customThemeData.accent,
-        text=customThemeData.text,
-        glass=customThemeData.glass,
-        glassSecondary=customThemeData.glassSecondary
-    })
-    print("theme saved: "..name)
-end)
-
-AddInputBox(ThemeTab,"load custom theme:","theme name...","load",function(name)
-    local theme=LoadTheme(name)
-    if theme then
-        UpdateTheme(theme)
-        customThemeData.main=theme.main
-        customThemeData.secondary=theme.secondary
-        customThemeData.accent=theme.accent
-        customThemeData.text=theme.text
-        customThemeData.glass=theme.glass
-        customThemeData.glassSecondary=theme.glassSecondary
-        print("theme loaded: "..name)
-    else
-        print("theme not found: "..name)
-    end
-end)
-
--- ============================================================
--- FLING TAB (вращательность и разрушительность)
--- ============================================================
-local flingEnabled = false
-local flingTarget = nil
-local flingPower = 500
-local flingBV = nil
-local autoRespawnFling = false
-local orbitMode = false
-
-local function GetPlayerList()
-    local list={}
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr~=LocalPlayer then table.insert(list,plr.Name) end
-    end
-    return list
-end
-
-local function StopFling()
-    flingEnabled=false
-    if flingBV and flingBV.Parent then flingBV:Destroy() end
-    flingBV=nil
-end
-
-local function StartFling()
-    if flingEnabled then return end
-    local char=LocalPlayer.Character
-    if not char then return end
-    local hrp=char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    if flingBV and flingBV.Parent then flingBV:Destroy() end
-    flingBV=Instance.new("BodyAngularVelocity")
-    flingBV.Name="aviadonsflingbv"
-    flingBV.Parent=hrp
-    flingBV.MaxTorque=Vector3.new(math.huge,math.huge,math.huge)
-    flingBV.AngularVelocity=Vector3.new(0,flingPower,0)
-    flingBV.P=math.huge
-    flingEnabled=true
-
-    if flingTarget then
-        local targetPlayer=Players:FindFirstChild(flingTarget)
-        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            task.spawn(function()
-                while flingEnabled do
-                    local c=LocalPlayer.Character
-                    if not c then break end
-                    local h=c:FindFirstChild("HumanoidRootPart")
-                    local tp=targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    if h and tp and tp.Parent then
-                        h.CFrame=tp.CFrame*CFrame.new(0,0,3)
-                    else break end
-                    task.wait(0.1)
-                end
-            end)
-        end
-    end
-end
-
--- автовозобновление после респавна (постоянность)
-LocalPlayer.CharacterAdded:Connect(function(newChar)
-    character=newChar
-    humanoidRootPart=newChar:WaitForChild("HumanoidRootPart")
-    flingBV=nil
-    flingEnabled=false
-    task.wait(1)
-    if autoRespawnFling then
-        task.wait(0.5)
-        StartFling()
-    end
-end)
-
-AddLabel(FlingTab,"fling settings",true)
-
-AddSlider(FlingTab,"fling power",100,2000,500,nil,function(v)
-    flingPower=v
-    if flingBV and flingBV.Parent then
-        flingBV.AngularVelocity=Vector3.new(0,v,0)
-    end
-end)
-
-local targetDropdown=AddDropdown(FlingTab,"select target:",function()
-    return GetPlayerList()
-end,function(name)
-    flingTarget=name
-end)
-
-AddButton(FlingTab,"refresh player list",function()
-    if targetDropdown and targetDropdown.refresh then
-        targetDropdown.refresh()
-    end
-end)
-
-AddToggle(FlingTab,"auto restart after respawn",false,function(v)
-    autoRespawnFling=v
-end)
-
-AddLabel(FlingTab,"controls",true)
-
-AddButton(FlingTab,"start fling",function()
-    StartFling()
-end)
-
-AddButton(FlingTab,"stop fling",function()
-    StopFling()
-end)
-
-AddButton(FlingTab,"fling all players",function()
-    if not flingEnabled then StartFling() end
-    task.spawn(function()
-        local list=GetPlayerList()
-        local idx=1
-        while flingEnabled and #list>0 do
-            local plr=Players:FindFirstChild(list[idx])
-            if plr and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                local c=LocalPlayer.Character
-                if c and c:FindFirstChild("HumanoidRootPart") then
-                    c.HumanoidRootPart.CFrame=plr.Character.HumanoidRootPart.CFrame*CFrame.new(0,0,3)
-                end
-                task.wait(2)
-            end
-            idx=idx+1
-            if idx>#list then idx=1; list=GetPlayerList() end
-            task.wait(0.1)
-        end
-    end)
-end)
-
-AddLabel(FlingTab,"advanced",true)
-
-AddToggle(FlingTab,"orbit mode",false,function(v)
-    orbitMode=v
-    if v and flingTarget then
-        task.spawn(function()
-            local angle=0
-            while orbitMode and flingEnabled do
-                local tp=Players:FindFirstChild(flingTarget)
-                if tp and tp.Character and tp.Character:FindFirstChild("HumanoidRootPart") then
-                    local c=LocalPlayer.Character
-                    if c and c:FindFirstChild("HumanoidRootPart") then
-                        local pos=tp.Character.HumanoidRootPart.Position
-                        c.HumanoidRootPart.CFrame=CFrame.new(pos+Vector3.new(math.cos(angle)*5,2,math.sin(angle)*5))
-                        angle=angle+0.1
-                    else break end
-                else break end
-                task.wait(0.05)
-            end
-        end)
-    end
-end)
-
-AddButton(FlingTab,"vertical fling",function()
-    local c=LocalPlayer.Character
-    if not c then return end
-    local hrp=c:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    if flingBV and flingBV.Parent then flingBV:Destroy() end
-    flingBV=Instance.new("BodyAngularVelocity")
-    flingBV.Name="aviadonsflingbv"
-    flingBV.Parent=hrp
-    flingBV.MaxTorque=Vector3.new(math.huge,0,math.huge)
-    flingBV.AngularVelocity=Vector3.new(flingPower,0,flingPower)
-    flingBV.P=math.huge
-    flingEnabled=true
-end)
-
-AddButton(FlingTab,"random target fling",function()
-    local list=GetPlayerList()
-    if #list>0 then
-        flingTarget=list[math.random(1,#list)]
-        StartFling()
-    end
-end)
-
-AddButton(FlingTab,"emergency stop",function()
-    StopFling()
-    task.wait(0.2)
-    if LocalPlayer.Character then LocalPlayer.Character:BreakJoints() end
-end)
-
-local infoLabel=AddLabel(FlingTab,"status: idle")
-task.spawn(function()
-    while task.wait(0.5) do
-        pcall(function()
-            if infoLabel and infoLabel.Parent then
-                if flingEnabled then
-                    local s="status: active"
-                    if flingTarget then s=s.." | target: "..flingTarget end
-                    s=s.." | power: "..flingPower
-                    infoLabel.Text=s
-                else
-                    infoLabel.Text="status: idle"
-                end
-            end
-        end)
-    end
-end)
-
--- ============================================================
--- COMBAT TAB (боевость и точность)
--- ============================================================
-local AimbotFolder=Instance.new("Folder")
-AimbotFolder.Name="AviadonsAimbot"
-AimbotFolder.Parent=Aviadons
-
-local FOVCircle=Instance.new("Frame")
-FOVCircle.Name="FOVCircle"
-FOVCircle.Parent=AimbotFolder
-FOVCircle.BackgroundColor3=Color3.fromRGB(255,255,255)
-FOVCircle.BackgroundTransparency=1
-FOVCircle.Visible=false
-FOVCircle.Size=UDim2.new(0,State.aimbotFOV*2,0,State.aimbotFOV*2)
-FOVCircle.Position=UDim2.new(0.5,-State.aimbotFOV,0.5,-State.aimbotFOV)
-FOVCircle.ZIndex=100
-Instance.new("UICorner",FOVCircle).CornerRadius=UDim.new(1,0)
-local FOVStroke=Instance.new("UIStroke",FOVCircle)
-FOVStroke.Thickness=1.5
-FOVStroke.Color=State.crosshairColor
-FOVStroke.Transparency=0.2
-
-local function GetClosestPlayerToMouse()
-    local target=nil
-    local shortestDist=State.aimbotFOV
-    local mousePos=UserInputService:GetMouseLocation()
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr~=LocalPlayer and plr.Character then
-            if not State.aimbotTeamCheck or plr.Team~=LocalPlayer.Team then
-                local part=plr.Character:FindFirstChild(State.aimbotTargetPart)
-                if part then
-                    local pos,onScreen=Camera:WorldToViewportPoint(part.Position)
-                    if onScreen then
-                        local dist=(Vector2.new(pos.X,pos.Y)-Vector2.new(mousePos.X,mousePos.Y)).Magnitude
-                        if dist<shortestDist then
-                            if State.aimbotVisibleCheck then
-                                local ray=Ray.new(Camera.CFrame.Position,(part.Position-Camera.CFrame.Position).Unit*500)
-                                local hit=Workspace:FindPartOnRayWithIgnoreList(ray,{LocalPlayer.Character,Camera})
-                                if hit and hit:IsDescendantOf(plr.Character) then
-                                    shortestDist=dist; target=part
-                                end
-                            else
-                                shortestDist=dist; target=part
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return target
-end
-
-RunService.RenderStepped:Connect(function()
-    if State.aimbotEnabled then
-        FOVCircle.Visible=true
-        FOVCircle.Size=UDim2.new(0,State.aimbotFOV*2,0,State.aimbotFOV*2)
-        FOVCircle.Position=UDim2.new(0.5,-State.aimbotFOV,0.5,-State.aimbotFOV)
-        FOVStroke.Color=State.crosshairColor
-        if State.aimbotHolding then
-            local target=GetClosestPlayerToMouse()
-            if target then
-                local currentCF=Camera.CFrame
-                local targetCF=CFrame.new(currentCF.Position,target.Position)
-                Camera.CFrame=currentCF:Lerp(targetCF,State.aimbotSmoothness)
-            end
-        end
-    else
-        FOVCircle.Visible=false
-    end
-end)
-
-UserInputService.InputBegan:Connect(function(input,gp)
-    if not gp and input.KeyCode==State.aimbotKeyBind then State.aimbotHolding=true end
-end)
-UserInputService.InputEnded:Connect(function(input)
-    if input.KeyCode==State.aimbotKeyBind then State.aimbotHolding=false end
-end)
-
-local CrosshairFolder=Instance.new("Folder",Aviadons)
-CrosshairFolder.Name="Crosshair"
-local function MakeLine(name,size,pos)
-    local line=Instance.new("Frame")
-    line.Name=name; line.Parent=CrosshairFolder
-    line.BackgroundColor3=State.crosshairColor
-    line.BorderSizePixel=0; line.Size=size; line.Position=pos
-    line.Visible=false; line.ZIndex=100
-    return line
-end
-local chTop=MakeLine("Top",UDim2.new(0,2,0,8),UDim2.new(0.5,-1,0.5,-12))
-local chBottom=MakeLine("Bottom",UDim2.new(0,2,0,8),UDim2.new(0.5,-1,0.5,4))
-local chLeft=MakeLine("Left",UDim2.new(0,8,0,2),UDim2.new(0.5,-12,0.5,-1))
-local chRight=MakeLine("Right",UDim2.new(0,8,0,2),UDim2.new(0.5,4,0.5,-1))
-
-local function UpdateCrosshairVisual()
-    local vis=State.crosshairEnabled
-    chTop.Visible=vis; chBottom.Visible=vis
-    chLeft.Visible=vis; chRight.Visible=vis
-    chTop.BackgroundColor3=State.crosshairColor
-    chBottom.BackgroundColor3=State.crosshairColor
-    chLeft.BackgroundColor3=State.crosshairColor
-    chRight.BackgroundColor3=State.crosshairColor
-end
-
 AddLabel(CombatTab,"aimbot",true)
 AddToggle(CombatTab,"aimbot enabled",false,function(v) State.aimbotEnabled=v end)
 AddToggle(CombatTab,"team check",true,function(v) State.aimbotTeamCheck=v end)
@@ -1806,26 +996,406 @@ AddDropdown(CombatTab,"target part",function()
     return {"Head","HumanoidRootPart","Torso","UpperTorso"}
 end,function(part) State.aimbotTargetPart=part end)
 
-AddLabel(CombatTab,"silent aim",true)
-AddToggle(CombatTab,"silent aim",false,function(v) State.silentAimEnabled=v end)
-AddSlider(CombatTab,"hit chance %",1,100,100,"silentAimHitChance",function(v) State.silentAimHitChance=v end)
+AddToggle(CombatTab, "aim lock", false, function(v)
+    State.aimLockEnabled = v
+    task.spawn(function()
+        while State.aimLockEnabled do
+            if State.aimLockTarget then
+                local tp = Players:FindFirstChild(State.aimLockTarget)
+                if tp and tp.Character and tp.Character:FindFirstChild("Head") then
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, tp.Character.Head.Position)
+                end
+            end
+            task.wait(0.01)
+        end
+    end)
+end)
 
-AddLabel(CombatTab,"crosshair",true)
-AddToggle(CombatTab,"custom crosshair",false,function(v) State.crosshairEnabled=v; UpdateCrosshairVisual() end)
-AddColorPicker(CombatTab,"crosshair color",function() return State.crosshairColor end,function(c) State.crosshairColor=c; UpdateCrosshairVisual() end)
+AddDropdown(CombatTab, "aim lock target", function()
+    return GetPlayerList()
+end, function(name)
+    State.aimLockTarget = name
+end)
 
-local blockRemotes=false
-AddToggle(CombatTab,"block damage remotes",false,function(v) blockRemotes=v end)
+AddToggle(CombatTab, "auto dodge", false, function(v)
+    State.autoDodgeEnabled = v
+    task.spawn(function()
+        while State.autoDodgeEnabled do
+            pcall(function()
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = LocalPlayer.Character.HumanoidRootPart
+                    for _, obj in pairs(Workspace:GetChildren()) do
+                        if obj:IsA("BasePart") and obj.Velocity.Magnitude > 100 then
+                            if (obj.Position - hrp.Position).Magnitude < 30 then
+                                hrp.CFrame = hrp.CFrame * CFrame.new(math.random(-15, 15), 0, math.random(-15, 15))
+                            end
+                        end
+                    end
+                end
+            end)
+            task.wait(0.05)
+        end
+    end)
+end)
 
--- ============================================================
--- MISC TAB (разнообразность)
--- ============================================================
-local NVFolder=Instance.new("ColorCorrectionEffect",Lighting)
-NVFolder.Name="AviadonsNightVision"
-NVFolder.Enabled=false
-NVFolder.Brightness=0.5
-NVFolder.Contrast=1
-NVFolder.TintColor=Color3.fromRGB(100,255,100)
+AddSlider(CombatTab, "hitbox expander", 1, 20, 1, "hitboxExpander", function(v)
+    State.hitboxExpander = v
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character then
+            local part = plr.Character:FindFirstChild(State.aimbotTargetPart or "Head")
+            if part then
+                part.Size = Vector3.new(v, v, v)
+                part.Transparency = v > 1 and 0.5 or 0
+            end
+        end
+    end
+end)
+
+AddToggle(CombatTab, "no jump delay", false, function(v)
+    State.noJumpDelay = v
+    task.spawn(function()
+        while State.noJumpDelay do
+            pcall(function()
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                    LocalPlayer.Character.Humanoid.UseJumpPower = true
+                    LocalPlayer.Character.Humanoid.JumpPower = State.jumpPower
+                    LocalPlayer.Character.Humanoid:SetAttribute("JumpDelay", 0)
+                end
+            end)
+            task.wait(0.1)
+        end
+    end)
+end)
+
+AddToggle(CombatTab, "auto reload", false, function(v)
+    State.autoReloadEnabled = v
+    task.spawn(function()
+        while State.autoReloadEnabled do
+            pcall(function()
+                for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+                    if tool:FindFirstChild("Reload") then
+                        tool.Reload:FireServer()
+                    end
+                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(tool.Name) then
+                        local equipped = LocalPlayer.Character[tool.Name]
+                        if equipped:FindFirstChild("Reload") then
+                            equipped.Reload:FireServer()
+                        end
+                    end
+                end
+            end)
+            task.wait(0.5)
+        end
+    end)
+end)
+
+AddToggle(CombatTab, "fast punch / rapid fire", false, function(v)
+    State.fastPunchEnabled = v
+    task.spawn(function()
+        while State.fastPunchEnabled do
+            pcall(function()
+                if LocalPlayer.Character then
+                    local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
+                    if tool and tool:FindFirstChild("Activate") then
+                        tool.Activate:FireServer()
+                    end
+                end
+            end)
+            task.wait(0.05)
+        end
+    end)
+end)
+
+AddToggle(CombatTab, "gun modifier", false, function(v)
+    State.gunModEnabled = v
+    task.spawn(function()
+        while State.gunModEnabled do
+            pcall(function()
+                for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+                    tool:SetAttribute("FireRate", 0.01)
+                    tool:SetAttribute("Damage", 999)
+                    tool:SetAttribute("Range", 9999)
+                    tool:SetAttribute("Spread", 0)
+                    tool:SetAttribute("Recoil", 0)
+                end
+                if LocalPlayer.Character then
+                    for _, tool in pairs(LocalPlayer.Character:GetChildren()) do
+                        if tool:IsA("Tool") then
+                            tool:SetAttribute("FireRate", 0.01)
+                            tool:SetAttribute("Damage", 999)
+                            tool:SetAttribute("Range", 9999)
+                            tool:SetAttribute("Spread", 0)
+                            tool:SetAttribute("Recoil", 0)
+                        end
+                    end
+                end
+            end)
+            task.wait(1)
+        end
+    end)
+end)
+
+AddSlider(CombatTab, "reach extender", 0, 50, 0, "reachExtender", function(v)
+    State.reachExtender = v
+    pcall(function()
+        if LocalPlayer.Character then
+            for _, tool in pairs(LocalPlayer.Character:GetChildren()) do
+                if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
+                    tool.Handle.Size = Vector3.new(v + 1, v + 1, v + 1)
+                end
+            end
+        end
+        for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+            if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
+                tool.Handle.Size = Vector3.new(v + 1, v + 1, v + 1)
+            end
+        end
+    end)
+end)
+
+AddToggle(CombatTab, "auto block", false, function(v)
+    State.autoBlockEnabled = v
+    task.spawn(function()
+        while State.autoBlockEnabled do
+            pcall(function()
+                if LocalPlayer.Character then
+                    local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
+                    if tool then
+                        for _, plr in pairs(Players:GetPlayers()) do
+                            if plr ~= LocalPlayer and plr.Character then
+                                local theirTool = plr.Character:FindFirstChildOfClass("Tool")
+                                local myHrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                                local theirHrp = plr.Character:FindFirstChild("HumanoidRootPart")
+                                if theirTool and myHrp and theirHrp then
+                                    if (myHrp.Position - theirHrp.Position).Magnitude < 15 then
+                                        if tool:FindFirstChild("Block") then
+                                            tool.Block:FireServer()
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+            task.wait(0.1)
+        end
+    end)
+end)
+
+local character=LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local humanoidRootPart=character:WaitForChild("HumanoidRootPart")
+
+local function processCoins()
+    if not character or not humanoidRootPart then
+        character=LocalPlayer.Character
+        if character then humanoidRootPart=character:FindFirstChild("HumanoidRootPart") end
+        return
+    end
+    local coinsFolder=Workspace:FindFirstChild("coins")
+    local collectReq=ReplicatedStorage:FindFirstChild("CollectCoinRequest")
+    if coinsFolder and collectReq then
+        local closest,closestDist=nil,State.collectionRadius
+        for _, coin in ipairs(coinsFolder:GetChildren()) do
+            if coin:IsA("Model") and not coin:GetAttribute("Collected") then
+                local p=coin.PrimaryPart or coin:FindFirstChildWhichIsA("BasePart")
+                if p then 
+                    local dist=(p.Position-humanoidRootPart.Position).Magnitude
+                    if dist<closestDist then closestDist=dist; closest={coin=coin,position=p.Position} end
+                end
+            end
+        end
+        if closest then
+            if closestDist>8 then
+                humanoidRootPart.CFrame=CFrame.new(humanoidRootPart.Position+(closest.position-humanoidRootPart.Position).Unit*16)
+            else
+                collectReq:FireServer(closest.coin)
+            end
+        end
+    end
+end
+
+AddToggle(FarmTab,"auto coin farm",false,function(v)
+    State.farmRunning=v
+    if v then
+        task.spawn(function()
+            while State.farmRunning do processCoins(); task.wait(0.05) end
+        end)
+    end
+end)
+
+local radRef=AddSlider(FarmTab,"collection radius",10,200,50,"collectionRadius",function(v)
+    State.collectionRadius=v
+end)
+
+AddToggle(FarmTab,"auto collect nearby tools",false,function(v)
+    State.autoTool=v
+    task.spawn(function()
+        while State.autoTool do
+            for _, item in pairs(Workspace:GetChildren()) do
+                if item:IsA("Tool") and item:FindFirstChild("Handle") then
+                    LocalPlayer.Character:MoveTo(item.Handle.Position)
+                    task.wait(0.3)
+                end
+            end
+            task.wait(1)
+        end
+    end)
+end)
+
+AddToggle(FarmTab, "auto pickup items", false, function(v)
+    State.autoPickupEnabled = v
+    task.spawn(function()
+        while State.autoPickupEnabled do
+            pcall(function()
+                for _, obj in pairs(Workspace:GetDescendants()) do
+                    if (obj:IsA("Model") or obj:IsA("Tool")) and obj:FindFirstChildWhichIsA("BasePart") then
+                        local part = obj:FindFirstChildWhichIsA("BasePart")
+                        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            local hrp = LocalPlayer.Character.HumanoidRootPart
+                            if (part.Position - hrp.Position).Magnitude < 50 then
+                                firetouchinterest(hrp, part, 0)
+                                firetouchinterest(hrp, part, 1)
+                                local pickupRemote = ReplicatedStorage:FindFirstChild("Pickup") or ReplicatedStorage:FindFirstChild("CollectItem")
+                                if pickupRemote then
+                                    pickupRemote:FireServer(obj)
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+            task.wait(0.1)
+        end
+    end)
+end)
+
+AddToggle(FarmTab, "auto quest", false, function(v)
+    State.autoQuestEnabled = v
+    task.spawn(function()
+        while State.autoQuestEnabled do
+            pcall(function()
+                local questRemote = ReplicatedStorage:FindFirstChild("AcceptQuest") or ReplicatedStorage:FindFirstChild("StartQuest")
+                if questRemote then
+                    questRemote:FireServer()
+                end
+                local turnInRemote = ReplicatedStorage:FindFirstChild("TurnInQuest") or ReplicatedStorage:FindFirstChild("CompleteQuest")
+                if turnInRemote then
+                    turnInRemote:FireServer()
+                end
+                for _, obj in pairs(Workspace:GetDescendants()) do
+                    if obj:IsA("Model") and (obj.Name:lower():find("quest") or obj.Name:lower():find("npc")) then
+                        local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+                        if prompt then
+                            fireproximityprompt(prompt, 0)
+                        end
+                    end
+                end
+            end)
+            task.wait(2)
+        end
+    end)
+end)
+
+AddToggle(FarmTab, "auto buy items", false, function(v)
+    State.autoBuyEnabled = v
+    task.spawn(function()
+        while State.autoBuyEnabled do
+            pcall(function()
+                local buyRemote = ReplicatedStorage:FindFirstChild("BuyItem") or ReplicatedStorage:FindFirstChild("PurchaseItem")
+                if buyRemote then
+                    local items = {"Sword", "Potion", "Shield", "Armor", "Apple", "Bread"}
+                    for _, item in pairs(items) do
+                        buyRemote:FireServer(item)
+                    end
+                end
+                for _, obj in pairs(Workspace:GetDescendants()) do
+                    if obj:IsA("Model") and (obj.Name:lower():find("shop") or obj.Name:lower():find("merchant") or obj.Name:lower():find("vendor")) then
+                        local prompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+                        if prompt then
+                            fireproximityprompt(prompt, 0)
+                        end
+                    end
+                end
+            end)
+            task.wait(1)
+        end
+    end)
+end)
+
+AddToggle(FarmTab, "auto equip best tool", false, function(v)
+    State.autoEquipEnabled = v
+    task.spawn(function()
+        while State.autoEquipEnabled do
+            pcall(function()
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                    local hum = LocalPlayer.Character.Humanoid
+                    local bestTool = nil
+                    local bestDamage = 0
+                    for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+                        if tool:IsA("Tool") then
+                            local dmg = tool:GetAttribute("Damage") or 0
+                            if dmg > bestDamage then
+                                bestDamage = dmg
+                                bestTool = tool
+                            end
+                        end
+                    end
+                    if bestTool and not LocalPlayer.Character:FindFirstChild(bestTool.Name) then
+                        hum:EquipTool(bestTool)
+                    end
+                end
+            end)
+            task.wait(2)
+        end
+    end)
+end)
+
+AddSlider(FarmTab, "mob farm radius", 10, 500, 100, "autoFarmRadius", function(v)
+    State.autoFarmRadius = v
+end)
+
+AddToggle(FarmTab, "auto farm mobs", false, function(v)
+    State.autoFarmMobsEnabled = v
+    task.spawn(function()
+        while State.autoFarmMobsEnabled do
+            pcall(function()
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = LocalPlayer.Character.HumanoidRootPart
+                    local closestMob = nil
+                    local closestDist = State.autoFarmRadius
+                    for _, obj in pairs(Workspace:GetDescendants()) do
+                        if obj:IsA("Model") and (obj.Name:lower():find("mob") or obj.Name:lower():find("enemy") or obj.Name:lower():find("npc") or obj.Name:lower():find("monster")) then
+                            if obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") then
+                                local mobHrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso")
+                                local dist = (mobHrp.Position - hrp.Position).Magnitude
+                                if dist < closestDist then
+                                    closestDist = dist
+                                    closestMob = obj
+                                end
+                            end
+                        end
+                    end
+                    if closestMob then
+                        local mobHrp = closestMob:FindFirstChild("HumanoidRootPart") or closestMob:FindFirstChild("Torso")
+                        if closestDist > 10 then
+                            hrp.CFrame = mobHrp.CFrame * CFrame.new(0, 0, 5)
+                        end
+                        local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
+                        if tool then
+                            tool:Activate()
+                            local dmgRemote = ReplicatedStorage:FindFirstChild("Damage") or ReplicatedStorage:FindFirstChild("Attack")
+                            if dmgRemote then
+                                dmgRemote:FireServer(closestMob)
+                            end
+                        end
+                    end
+                end
+            end)
+            task.wait(0.1)
+        end
+    end)
+end)
 
 local flyV2Conn
 local function StartFlyV2()
@@ -1975,20 +1545,240 @@ AddButton(MiscTab,"rejoin server",function()
 end)
 AddButton(MiscTab,"server hop",function() ServerHop() end)
 
-AddLabel(MiscTab,"visual extras",true)
-AddToggle(MiscTab,"night vision",false,function(v)
-    State.nightVisionEnabled=v
-    NVFolder.Enabled=v
+AddLabel(MiscTab,"auto clicker", true)
+AddSlider(MiscTab, "auto clicker speed", 1, 20, 5, "autoClickerSpeed", function(v)
+    State.autoClickerSpeed = v / 20
 end)
 
-AddLabel(MiscTab,"player info",true)
-AddLabel(MiscTab,"user id: "..LocalPlayer.UserId)
-AddButton(MiscTab,"copy user id",function()
-    if setclipboard then setclipboard(tostring(LocalPlayer.UserId)) end
+AddToggle(MiscTab, "auto clicker (hold mouse)", false, function(v)
+    State.autoClickerEnabled = v
+    UserInputService.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and State.autoClickerEnabled then
+            State.autoClickerHolding = true
+            task.spawn(function()
+                while State.autoClickerHolding and State.autoClickerEnabled do
+                    mouse1click()
+                    task.wait(State.autoClickerSpeed)
+                end
+            end)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            State.autoClickerHolding = false
+        end
+    end)
 end)
-AddButton(MiscTab,"copy job id",function()
-    if setclipboard then setclipboard(tostring(game.JobId)) end
+
+AddLabel(MiscTab,"player utilities",true)
+
+AddToggle(MiscTab, "auto respawn", false, function(v)
+    State.autoRespawnEnabled = v
+    task.spawn(function()
+        while State.autoRespawnEnabled do
+            pcall(function()
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                    if LocalPlayer.Character.Humanoid.Health <= 0 then
+                        LocalPlayer:LoadCharacter()
+                    end
+                end
+            end)
+            task.wait(0.5)
+        end
+    end)
 end)
+
+AddToggle(MiscTab, "anti void", false, function(v)
+    State.antiVoidEnabled = v
+    task.spawn(function()
+        local savedPos = nil
+        while State.antiVoidEnabled do
+            pcall(function()
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = LocalPlayer.Character.HumanoidRootPart
+                    if hrp.Position.Y > -10 then
+                        savedPos = hrp.Position
+                    else
+                        hrp.CFrame = CFrame.new(savedPos or Vector3.new(0, 50, 0))
+                    end
+                end
+            end)
+            task.wait(0.1)
+        end
+    end)
+end)
+
+AddSlider(MiscTab, "auto heal threshold %", 1, 100, 30, "autoHealThreshold", function(v)
+    State.autoHealThreshold = v
+end)
+
+AddToggle(MiscTab, "auto heal", false, function(v)
+    State.autoHealEnabled = v
+    task.spawn(function()
+        while State.autoHealEnabled do
+            pcall(function()
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                    local hum = LocalPlayer.Character.Humanoid
+                    if (hum.Health / hum.MaxHealth) * 100 < State.autoHealThreshold then
+                        local healRemote = ReplicatedStorage:FindFirstChild("Heal") or ReplicatedStorage:FindFirstChild("UseItem")
+                        if healRemote then
+                            healRemote:FireServer("HealthPotion")
+                        end
+                        for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+                            if tool.Name:lower():find("potion") or tool.Name:lower():find("food") or tool.Name:lower():find("heal") then
+                                LocalPlayer.Character.Humanoid:EquipTool(tool)
+                                tool:Activate()
+                                task.wait(0.5)
+                                tool:Destroy()
+                            end
+                        end
+                    end
+                end
+            end)
+            task.wait(0.5)
+        end
+    end)
+end)
+
+AddToggle(MiscTab, "platform stand", false, function(v)
+    State.platformStand = v
+    pcall(function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.PlatformStand = v
+        end
+    end)
+    if v then
+        task.spawn(function()
+            while State.platformStand do
+                pcall(function()
+                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                        LocalPlayer.Character.Humanoid.PlatformStand = true
+                    end
+                end)
+                task.wait(1)
+            end
+        end)
+    end
+end)
+
+AddInputBox(MiscTab, "spam message", "enter message...", "set", function(msg)
+    State.spamChatMessage = msg
+end)
+
+AddSlider(MiscTab, "spam delay", 1, 10, 1, "spamChatDelay", function(v)
+    State.spamChatDelay = v
+end)
+
+AddToggle(MiscTab, "spam chat", false, function(v)
+    State.spamChatEnabled = v
+    task.spawn(function()
+        while State.spamChatEnabled do
+            pcall(function()
+                local args = { [1] = State.spamChatMessage }
+                ReplicatedStorage:FindFirstChild("SayMessageRequest"):FireServer(unpack(args), "All")
+            end)
+            task.wait(State.spamChatDelay)
+        end
+    end)
+end)
+
+AddToggle(MiscTab, "freeze all players (visual)", false, function(v)
+    State.freezePlayersEnabled = v
+    task.spawn(function()
+        while State.freezePlayersEnabled do
+            pcall(function()
+                for _, plr in pairs(Players:GetPlayers()) do
+                    if plr ~= LocalPlayer and plr.Character then
+                        local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            hrp.Anchored = true
+                        end
+                    end
+                end
+            end)
+            task.wait(0.5)
+        end
+    end)
+    if not v then
+        pcall(function()
+            for _, plr in pairs(Players:GetPlayers()) do
+                if plr ~= LocalPlayer and plr.Character then
+                    local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp then hrp.Anchored = false end
+                end
+            end
+        end)
+    end
+end)
+
+AddToggle(MiscTab, "anti-cheat disabler", false, function(v)
+    State.acDisablerEnabled = v
+    if v then
+        pcall(function()
+            local mt = getrawmetatable(game)
+            setreadonly(mt, false)
+            local oldNamecall = mt.__namecall
+            mt.__namecall = newcclosure(function(self, ...)
+                local method = getnamecallmethod()
+                if method == "FireServer" or method == "InvokeServer" then
+                    if tostring(self):lower():find("anticheat") or tostring(self):lower():find("kick") or tostring(self):lower():find("ban") then
+                        return nil
+                    end
+                end
+                return oldNamecall(self, ...)
+            end)
+            
+            for _, obj in pairs(ReplicatedStorage:GetDescendants()) do
+                if (obj:IsA("Script") or obj:IsA("LocalScript")) and (obj.Name:lower():find("anticheat") or obj.Name:lower():find("ac") or obj.Name:lower():find("detect")) then
+                    obj.Disabled = true
+                end
+            end
+            for _, obj in pairs(Workspace:GetDescendants()) do
+                if (obj:IsA("Script") or obj:IsA("LocalScript")) and (obj.Name:lower():find("anticheat") or obj.Name:lower():find("ac") or obj.Name:lower():find("detect")) then
+                    obj.Disabled = true
+                end
+            end
+        end)
+    end
+end)
+
+AddLabel(ConfigTab,"configs",true)
+local configDropRef=AddDropdown(ConfigTab,"select config:",function()
+    return savedConfigNames
+end,function(name)
+    local ok=LoadConfig(name)
+end)
+
+AddInputBox(ConfigTab,"save new config:","config name...","save",function(name)
+    SaveConfig(name)
+    configDropRef.refresh()
+end)
+
+AddInputBox(ConfigTab,"load config by name:","config name...","load",function(name)
+    LoadConfig(name)
+end)
+
+AddButton(ConfigTab,"reset all settings",function()
+    State.speed=16; State.jumpPower=50; State.gravityVal=196
+    State.timeOfDay=14; State.collectionRadius=50; State.fov=70
+    if LocalPlayer.Character then
+        local hum=LocalPlayer.Character:FindFirstChild("Humanoid")
+        if hum then hum.WalkSpeed=16; hum.JumpPower=50 end
+    end
+    Workspace.Gravity=196; Lighting.ClockTime=14
+    workspace.CurrentCamera.FieldOfView=70
+    speedRef.setValue(16); jumpRef.setValue(50)
+end)
+
+AddLabel(ThemeTab,"preset themes",true)
+AddButton(ThemeTab,"dark",function() UpdateTheme(Themes.dark) end)
+AddButton(ThemeTab,"light",function() UpdateTheme(Themes.light) end)
+AddButton(ThemeTab,"purple",function() UpdateTheme(Themes.purple) end)
+AddButton(ThemeTab,"midnight",function() UpdateTheme(Themes.midnight) end)
+AddButton(ThemeTab,"rose",function() UpdateTheme(Themes.rose) end)
+AddButton(ThemeTab,"forest",function() UpdateTheme(Themes.forest) end)
+AddButton(ThemeTab,"sunset",function() UpdateTheme(Themes.sunset) end)
+AddButton(ThemeTab,"ice",function() UpdateTheme(Themes.ice) end)
 
 AddLabel(CustomTab,"custom toggles",true)
 AddCustomToggle(CustomTab)
@@ -1998,11 +1788,5 @@ AddLabel(CreditsTab,"raknetskid")
 AddLabel(CreditsTab,"solinexx")
 AddLabel(CreditsTab,"ab1s")
 AddLabel(CreditsTab,"chasova")
-AddLabel(CreditsTab,"kvaz1mota")
-AddLabel(CreditsTab,"izkor")
-AddLabel(CreditsTab,"azure143")
-AddLabel(CreditsTab,"mike.jpg")
-AddLabel(CreditsTab,"kjja")
-AddLabel(CreditsTab,"swan")
-  
+
 Pages.movement.Visible=true
