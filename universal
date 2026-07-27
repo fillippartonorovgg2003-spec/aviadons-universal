@@ -1012,10 +1012,7 @@ AddLabel(CreditsTab, "raknetSkid")
 AddLabel(CreditsTab, "DuoDeveloper")
 AddLabel(CreditsTab, "ab1ss")
 AddLabel(CreditsTab, "Chasova")
-AddLabel(CreditsTab, "Viilss ^^")
-AddLabel(CreditsTab, "xander")
 AddLabel(CreditsTab, "M3ster_")
-AddLabel(CreditsTab, "Aprisin4ik")
 AddLabel(CreditsTab, "solinexx")
 
 Pages.movement.Visible = true
